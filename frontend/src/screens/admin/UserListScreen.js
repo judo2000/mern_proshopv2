@@ -1,17 +1,21 @@
 import { LinkContainer } from 'react-router-bootstrap';
 import { Table, Button } from 'react-bootstrap';
-import { FaTimes } from 'react-icons/fa';
+import { FaTimes, FaTrash, FaEdit, FaCheck } from 'react-icons/fa';
 import Message from '../../components/Message';
 import Loader from '../../components/Loader';
-import { useGetOrdersQuery } from '../../slices/ordersApiSlice';
+import { useGetUsersQuery } from '../../slices/usersApiSlice';
 import { useDispatch } from 'react-redux';
 import { useLogoutMutation } from '../../slices/usersApiSlice';
 import { logout } from '../../slices/authSlice';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
-const OrderListScreen = () => {
-  const { data: orders, isLoading, error } = useGetOrdersQuery();
+const UserListScreen = () => {
+  const { data: users, refetch, isLoading, error } = useGetUsersQuery();
+
+  const deleteHandler = (id) => {
+    console.log('delete :', id);
+  };
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -32,53 +36,54 @@ const OrderListScreen = () => {
   if (error && error?.data?.message === 'Not authorized - no token') {
     logoutHandler();
   }
+  console.log(users);
   return (
     <>
-      <h1>Orders</h1>
+      <h1>Users</h1>
       {isLoading ? (
         <Loader />
       ) : error ? (
-        <Message variant="danger">{error.response.data.error}</Message>
+        <Message variant="danger">{error?.response?.data?.error}</Message>
       ) : (
         <Table striped hover responsive className="table-sm">
           <thead>
             <tr>
               <th>ID</th>
-              <th>USER</th>
-              <th>DATE</th>
-              <th>TOTAL</th>
-              <th>PAID</th>
-              <th>DELIVERED</th>
+              <th>NAME</th>
+              <th>EMAIL</th>
+              <th>ADMIN</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
-            {orders?.map((order) => (
-              <tr key={order._id}>
-                <td>{order._id}</td>
-                <td>{order.user && order.user.name}</td>
-                <td>{order.createdAt.substring(0, 10)}</td>
-                <td>{order.totalPrice}</td>
+            {users?.map((user) => (
+              <tr key={user._id}>
+                <td>{user._id}</td>
+                <td>{user.name}</td>
                 <td>
-                  {order.isPaid ? (
-                    order.paidAt.substring(0, 10)
+                  <a href={`mailto:${user.email}`}>{user.email}</a>
+                </td>
+                <td>
+                  {user.isAdmin ? (
+                    <FaCheck style={{ color: 'green' }} />
                   ) : (
                     <FaTimes style={{ color: 'red' }} />
                   )}
                 </td>
+
                 <td>
-                  {order.isDelivered ? (
-                    order.deliveredAt.substring(0, 10)
-                  ) : (
-                    <FaTimes style={{ color: 'red' }} />
-                  )}
-                </td>
-                <td>
-                  <LinkContainer to={`/order/${order._id}`}>
+                  <LinkContainer to={`/admin/user/${user._id}/edit`}>
                     <Button variant="light" className="btn-sm">
-                      Details
+                      <FaEdit />
                     </Button>
                   </LinkContainer>
+                  <Button
+                    variant="danger"
+                    className="btn-sm"
+                    onClick={() => deleteHandler(user._id)}
+                  >
+                    <FaTrash style={{ color: 'white' }} />
+                  </Button>
                 </td>
               </tr>
             ))}
@@ -89,4 +94,4 @@ const OrderListScreen = () => {
   );
 };
 
-export default OrderListScreen;
+export default UserListScreen;
