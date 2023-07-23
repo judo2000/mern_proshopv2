@@ -132,8 +132,8 @@ const getUsers = asyncHandler(async (req, res) => {
 // @route   GET /api/users/:id
 // @access  Private/Admin
 const getUserById = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.prams.id).select('-password');
-
+  const user = await User.findById(req.params.id).select('-password');
+  console.log('get user');
   if (user) {
     res.status(200).json(user);
   } else {
@@ -165,12 +165,12 @@ const deleteUser = asyncHandler(async (req, res) => {
 // @route   PUT /api/users/:id
 // @access  Private/Admin
 const updateUser = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user.id);
-
+  const user = await User.findById(req.params.id);
+  console.log(user);
   if (user) {
     user.name = req.body.name || user.name;
     user.email = req.body.email || user.email;
-    user.isAdmin = Boolean(req.body.isAdmin);
+    user.isAdmin = req.body.isAdmin;
 
     const updatedUser = await user.save();
 
